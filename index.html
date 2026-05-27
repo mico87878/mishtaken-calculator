@@ -808,9 +808,146 @@ input[type=range] {
   font-weight: 400;
 }
 .tip:hover .tip-text { display: block; }
+
+/* ─── LEAD GATE ─── */
+.gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(242,245,251,0.97);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition: opacity 0.4s ease;
+}
+.gate-card {
+  background: #ffffff;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 36px 32px 28px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 8px 48px rgba(0,0,0,0.10);
+  text-align: center;
+  animation: fadeUp 0.4s ease both;
+}
+.gate-logo {
+  font-size: 36px;
+  margin-bottom: 10px;
+}
+.gate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(81,88,232,0.08);
+  border: 1px solid rgba(81,88,232,0.25);
+  color: var(--indigo);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 16px;
+  border-radius: 99px;
+  margin-bottom: 14px;
+}
+.gate-title {
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #1a1f36 0%, #5158e8 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.gate-sub {
+  font-size: 14px;
+  color: var(--muted2);
+  margin-bottom: 24px;
+  line-height: 1.65;
+}
+.gate-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+  text-align: right;
+}
+.gate-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted2);
+}
+.gate-field input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: 'Heebo', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 11px 14px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  direction: rtl;
+  text-align: right;
+}
+.gate-field input:focus { border-color: var(--blue); background: var(--surface3); }
+.gate-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #14c8ba 100%);
+  background-size: 200% 200%;
+  border: none;
+  border-radius: var(--r-sm);
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Rubik', 'Heebo', sans-serif;
+  font-size: 16px;
+  font-weight: 800;
+  padding: 15px;
+  margin-top: 8px;
+  transition: transform 0.18s, box-shadow 0.2s, background-position 0.4s;
+  box-shadow: 0 4px 24px rgba(99,102,241,0.35);
+  letter-spacing: 0.2px;
+}
+.gate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.45); background-position: right center; }
+.gate-btn:active { transform: translateY(0); }
+.gate-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+.gate-disclaimer {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 14px;
+  line-height: 1.55;
+}
 </style>
 </head>
 <body>
+
+<!-- LEAD GATE -->
+<div class="gate-overlay" id="leadGate">
+  <div class="gate-card">
+    <div class="gate-logo">🏠</div>
+    <div class="gate-badge">קהילת הפודקאסט D-9 נדל"ן</div>
+    <div class="gate-title">מחשבון דירה בהנחה 2026</div>
+    <p class="gate-sub">השאירו פרטים ותקבלו גישה מיידית למחשבון המקצועי — בחינם</p>
+    <form id="leadForm" onsubmit="submitLead(event)">
+      <div class="gate-field">
+        <label>שם מלא</label>
+        <input type="text" id="gName" placeholder="ישראל ישראלי" required autocomplete="name">
+      </div>
+      <div class="gate-field">
+        <label>אימייל</label>
+        <input type="email" id="gEmail" placeholder="israel@gmail.com" required autocomplete="email">
+      </div>
+      <div class="gate-field">
+        <label>טלפון נייד</label>
+        <input type="tel" id="gPhone" placeholder="050-1234567" required autocomplete="tel">
+      </div>
+      <button type="submit" class="gate-btn" id="gateBtn">⚡ כניסה למחשבון</button>
+    </form>
+    <p class="gate-disclaimer">🔒 הפרטים שלך שמורים אצלנו בלבד ולא יועברו לצד שלישי</p>
+  </div>
+</div>
 
 <!-- HERO -->
 <div class="hero">
@@ -1517,8 +1654,47 @@ function calcIndex() {
 }
 
 // ══════════════════════════════════════════
+//  LEAD GATE
+// ══════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzclD6BPN0NogASICTaDuPOfPB1uShKmwgaup-iKCnFbXCM-KElltyy0MGUI8OIcDGN/exec';
+
+function initGate() {
+  if (localStorage.getItem('d9_lead_submitted')) {
+    document.getElementById('leadGate').style.display = 'none';
+  }
+}
+
+function submitLead(e) {
+  e.preventDefault();
+  const btn = document.getElementById('gateBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ שולח...';
+
+  const payload = {
+    name:  document.getElementById('gName').value.trim(),
+    email: document.getElementById('gEmail').value.trim(),
+    phone: document.getElementById('gPhone').value.trim()
+  };
+
+  // שליחה לגיליון גוגל (no-cors = fire and forget)
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    mode:   'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body:   JSON.stringify(payload)
+  }).catch(() => {});
+
+  // פתח מחשבון בכל מקרה
+  localStorage.setItem('d9_lead_submitted', '1');
+  const gate = document.getElementById('leadGate');
+  gate.style.opacity = '0';
+  setTimeout(() => { gate.style.display = 'none'; }, 400);
+}
+
+// ══════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════
+initGate();
 loadCities();
 document.getElementById('idxSignDate').value = new Date().toISOString().split('T')[0];
 updateAreaBreakdown(4);

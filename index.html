@@ -986,7 +986,7 @@ input[type=range] {
         <input type="tel" id="gPhone" placeholder="050-1234567" required autocomplete="tel">
       </div>
       <label class="gate-consent">
-        <input type="checkbox" id="gConsent">
+        <input type="checkbox" id="gConsent" required>
         <span>אני מסכים/ה לקבל עדכונים, ניתוחים ותכנים מקהילת D-9 נדל"ן</span>
       </label>
       <button type="submit" class="gate-btn" id="gateBtn">⚡ כניסה למחשבון</button>
@@ -1726,10 +1726,9 @@ function submitLead(e) {
   btn.textContent = '⏳ שולח...';
 
   const payload = {
-    name:    document.getElementById('gName').value.trim(),
-    email:   document.getElementById('gEmail').value.trim(),
-    phone:   document.getElementById('gPhone').value.trim(),
-    consent: document.getElementById('gConsent').checked ? 'כן' : 'לא'
+    name:  document.getElementById('gName').value.trim(),
+    email: document.getElementById('gEmail').value.trim(),
+    phone: document.getElementById('gPhone').value.trim()
   };
 
   // שליחה לגיליון גוגל (no-cors = fire and forget)

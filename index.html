@@ -936,10 +936,29 @@ input[type=range] {
 .gate-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.45); background-position: right center; }
 .gate-btn:active { transform: translateY(0); }
 .gate-btn:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+.gate-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-align: right;
+  margin-top: 14px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--muted2);
+  line-height: 1.5;
+}
+.gate-consent input[type=checkbox] {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  accent-color: var(--indigo);
+  margin-top: 1px;
+  cursor: pointer;
+}
 .gate-disclaimer {
   font-size: 11px;
   color: var(--muted);
-  margin-top: 14px;
+  margin-top: 10px;
   line-height: 1.55;
 }
 </style>
@@ -966,6 +985,10 @@ input[type=range] {
         <label>טלפון נייד</label>
         <input type="tel" id="gPhone" placeholder="050-1234567" required autocomplete="tel">
       </div>
+      <label class="gate-consent">
+        <input type="checkbox" id="gConsent">
+        <span>אני מסכים/ה לקבל עדכונים, ניתוחים ותכנים מקהילת D-9 נדל"ן</span>
+      </label>
       <button type="submit" class="gate-btn" id="gateBtn">⚡ כניסה למחשבון</button>
     </form>
     <p class="gate-disclaimer">🔒 הפרטים שלך שמורים אצלנו בלבד ולא יועברו לצד שלישי</p>
@@ -1703,9 +1726,10 @@ function submitLead(e) {
   btn.textContent = '⏳ שולח...';
 
   const payload = {
-    name:  document.getElementById('gName').value.trim(),
-    email: document.getElementById('gEmail').value.trim(),
-    phone: document.getElementById('gPhone').value.trim()
+    name:    document.getElementById('gName').value.trim(),
+    email:   document.getElementById('gEmail').value.trim(),
+    phone:   document.getElementById('gPhone').value.trim(),
+    consent: document.getElementById('gConsent').checked ? 'כן' : 'לא'
   };
 
   // שליחה לגיליון גוגל (no-cors = fire and forget)

@@ -765,6 +765,47 @@ input[type=range] {
   vertical-align: middle;
 }
 
+/* ─── MARKET UPDATE BOX ─── */
+.market-update-box {
+  background: linear-gradient(135deg, rgba(81,88,232,0.05) 0%, rgba(13,148,136,0.03) 100%);
+  border: 1px solid rgba(81,88,232,0.18);
+  border-radius: var(--r-sm);
+  padding: 18px 20px;
+  margin-top: 16px;
+}
+.market-update-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.market-update-desc {
+  font-size: 13px;
+  color: var(--muted2);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.market-update-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.market-update-btn {
+  background: var(--indigo);
+  border: none;
+  border-radius: var(--r-sm);
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 11px 20px;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.market-update-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+
 /* ─── MARKET NOTE ─── */
 .market-note {
   background: rgba(245,158,11,0.08);
@@ -1040,7 +1081,7 @@ input[type=range] {
       <div class="card-icon ci-blue">🏙️</div>
       <div>
         <div class="card-title">בחר עיר וסוג דירה</div>
-        <div class="card-sub">הנתונים יתעדכנו ברגע שיפורסמו נתוני ההגרלה</div>
+        <div class="card-sub">נתוני הגרלה 2026</div>
       </div>
     </div>
 
@@ -1076,25 +1117,6 @@ input[type=range] {
       </button>
     </div>
     <div class="area-breakdown" id="areaBreakdown"></div>
-  </div>
-
-  <!-- MARKET PRICE -->
-  <div class="card">
-    <div class="card-hd">
-      <div class="card-icon ci-amber">📊</div>
-      <div>
-        <div class="card-title">שווי שוק לפי הערכתך</div>
-        <div class="card-sub">אופציונלי — ישפיע על חישוב הרווח הצפוי</div>
-      </div>
-    </div>
-    <div class="field">
-      <label>שווי שוק אמיתי למ"ר לפי הערכתך <span class="optional-tag">אופציונלי</span></label>
-      <div class="input-wrap has-unit">
-        <input type="number" id="userMarketPrice" placeholder="למשל: 22,000">
-        <span class="unit">₪</span>
-      </div>
-      <div class="hint">אם לא תמלא — הרווח יחושב לפי המחיר העדכני של ההגרלה (לא בהכרח שווי שוק אמיתי)</div>
-    </div>
   </div>
 
   <!-- CALC BUTTON -->
@@ -1420,10 +1442,9 @@ function calculate() {
 
   const disc = { pct: city.discountPct, cap: city.discountCap };
 
-  // ── Step 3: Market value ──
-  const userMkt      = parseFloat(document.getElementById('userMarketPrice').value);
-  const usingUserMkt = userMkt > 0;
-  const marketVal    = usingUserMkt ? userMkt * sqm : priceUpdatedVAT;
+  // ── Step 3: Market value (always lottery price on first calc) ──
+  const marketVal    = priceUpdatedVAT;
+  const usingUserMkt = false;
   let mortgage, equity, mortgageNote;
 
   if (finalPrice <= PRICE_TIER1) {
@@ -1463,11 +1484,15 @@ function calculate() {
   setStep(3);
   document.getElementById('ctaBlock').style.display = 'flex';
 
+  // ── Store for market price update ──
+  const calcData = { city, rooms, rd, sqm, priceDisplayedVAT, priceUpdatedVAT,
+                     discAmt, discountNote, finalPrice, disc,
+                     mortgage, equity, mortgageNote,
+                     monthly, incomeNeeded, marketVal, profit, profitPct, usingUserMkt };
+  window.lastCalcData = calcData;
+
   // ── Render ──
-  renderResults({ city, rooms, rd, sqm, priceDisplayedVAT, priceUpdatedVAT,
-                  discAmt, discountNote, finalPrice, disc,
-                  mortgage, equity, mortgageNote,
-                  monthly, incomeNeeded, marketVal, profit, profitPct, usingUserMkt });
+  renderResults(calcData);
 }
 
 function renderResults(d) {
@@ -1518,30 +1543,20 @@ function renderResults(d) {
     </div>
 
     <!-- PROFIT -->
-    <div class="slbl" style="margin-top:18px">רווח משוער</div>
-    <div class="r-grid" style="margin-bottom:8px">
-      <div class="r-card amber">
-        <div class="r-lbl">שווי שוק ${d.usingUserMkt ? '(לפי הערכתך)' : '(לפי מחיר למשתכן)'}</div>
-        <div class="r-val">${fmt(d.marketVal)}</div>
-        <div class="r-sub">${fmtN(Math.round(d.marketVal / d.sqm))} ₪ למ"ר</div>
-      </div>
-      <div class="r-card ${profitPos ? 'green' : 'red'}">
-        <div class="r-lbl">רווח משוער</div>
-        <div class="r-val">${fmt(Math.abs(d.profit))}</div>
-        <div class="r-sub">${profitPos ? '✅ רווח על הנייר' : '⚠️ מחיר מעל שוק'}</div>
-      </div>
-      <div class="r-card ${profitPos ? 'green' : 'red'}">
-        <div class="r-lbl">שיעור הנחה ביחס לשווי שוק</div>
-        <div class="r-val">${Math.abs(d.profitPct)}%</div>
-        <div class="r-sub">${profitPos ? 'מתחת לשווי שוק' : 'מעל שווי שוק'}</div>
+    <div id="profitSection">${buildProfitHTML(d)}</div>
+
+    <!-- MARKET PRICE UPDATE -->
+    <div class="market-update-box">
+      <div class="market-update-title">📊 עדכון שווי שוק לפי הערכתך</div>
+      <p class="market-update-desc">אם אתם מעריכים ששווי השוק בעיר הזו שונה, תכניסו מחיר מוערך למ"ר ותקבלו את ההנחה ממחיר השוק האמיתי</p>
+      <div class="market-update-row">
+        <div class="input-wrap has-unit" style="flex:1">
+          <input type="number" id="userMarketPriceResult" placeholder="למשל: 22,000">
+          <span class="unit">₪/מ"ר</span>
+        </div>
+        <button class="market-update-btn" onclick="updateMarketValue()">עדכן רווח</button>
       </div>
     </div>
-
-    ${!d.usingUserMkt ? `
-    <div class="market-note">
-      ⚠️ שווי השוק מחושב לפי המחיר העדכני של ההגרלה בלבד — לא בהכרח שווי שוק אמיתי.
-      המחירים עלו מאז פרסום הנתונים. מלאו שווי שוק לפי הערכתכם לחישוב מדויק יותר.
-    </div>` : ''}
 
     <div style="text-align:center">
       <span class="reset-lnk" onclick="resetResults()">נקה תוצאות</span>
@@ -1561,6 +1576,44 @@ function renderResults(d) {
     const el = document.querySelector(sel);
     if (el) animateVal(el, val);
   });
+}
+
+function buildProfitHTML(d) {
+  const profitPos = d.profit >= 0;
+  return `
+    <div class="slbl" style="margin-top:18px">רווח משוער</div>
+    <div class="r-grid" style="margin-bottom:8px">
+      <div class="r-card amber">
+        <div class="r-lbl">שווי שוק ${d.usingUserMkt ? '(לפי הערכתך)' : '(לפי מחיר למשתכן)'}</div>
+        <div class="r-val">${fmt(d.marketVal)}</div>
+        <div class="r-sub">${fmtN(Math.round(d.marketVal / d.sqm))} ₪ למ"ר</div>
+      </div>
+      <div class="r-card ${profitPos ? 'green' : 'red'}">
+        <div class="r-lbl">רווח משוער</div>
+        <div class="r-val">${fmt(Math.abs(d.profit))}</div>
+        <div class="r-sub">${profitPos ? '✅ רווח על הנייר' : '⚠️ מחיר מעל שוק'}</div>
+      </div>
+      <div class="r-card ${profitPos ? 'green' : 'red'}">
+        <div class="r-lbl">שיעור הנחה ביחס לשווי שוק</div>
+        <div class="r-val">${Math.abs(d.profitPct)}%</div>
+        <div class="r-sub">${profitPos ? 'מתחת לשווי שוק' : 'מעל שווי שוק'}</div>
+      </div>
+    </div>
+  `;
+}
+
+function updateMarketValue() {
+  if (!window.lastCalcData) return;
+  const userMkt = parseFloat(document.getElementById('userMarketPriceResult').value);
+  if (!userMkt || userMkt <= 0) { alert('נא להזין שווי שוק תקין'); return; }
+
+  const d          = window.lastCalcData;
+  const marketVal  = userMkt * d.sqm;
+  const profit     = marketVal - d.finalPrice;
+  const profitPct  = (profit / marketVal * 100).toFixed(1);
+
+  const updated = { ...d, marketVal, profit, profitPct, usingUserMkt: true };
+  document.getElementById('profitSection').innerHTML = buildProfitHTML(updated);
 }
 
 function showComingSoon(cityName) {

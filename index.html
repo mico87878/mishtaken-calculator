@@ -765,6 +765,48 @@ input[type=range] {
   vertical-align: middle;
 }
 
+/* ─── PERSONAL MORTGAGE BOX ─── */
+.personal-box {
+  background: linear-gradient(135deg, rgba(5,150,105,0.05) 0%, rgba(13,148,136,0.03) 100%);
+  border: 1px solid rgba(5,150,105,0.22);
+  border-radius: var(--r-sm);
+  padding: 18px 20px;
+  margin-top: 16px;
+}
+.personal-box-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.personal-box-desc {
+  font-size: 13px;
+  color: var(--muted2);
+  line-height: 1.6;
+  margin-bottom: 14px;
+}
+.personal-box-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.personal-box-btn {
+  background: var(--green);
+  border: none;
+  border-radius: var(--r-sm);
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 11px 20px;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.personal-box-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+#personalResults { margin-top: 14px; display: none; }
+
 /* ─── MARKET UPDATE BOX ─── */
 .market-update-box {
   background: linear-gradient(135deg, rgba(81,88,232,0.05) 0%, rgba(13,148,136,0.03) 100%);
@@ -1542,6 +1584,20 @@ function renderResults(d) {
       <div class="ib-val">${fmt(d.incomeNeeded)}</div>
     </div>
 
+    <!-- PERSONAL MORTGAGE -->
+    <div class="personal-box">
+      <div class="personal-box-title">💰 חשב לפי ההון העצמי שלך</div>
+      <p class="personal-box-desc">הזינו את ההון העצמי שיש לכם בפועל וקבלו את המשכנתה, ההחזר החודשי וההכנסה הנדרשת עבורכם אישית</p>
+      <div class="personal-box-row">
+        <div class="input-wrap has-unit" style="flex:1">
+          <input type="number" id="userEquityInput" placeholder="למשל: 300,000">
+          <span class="unit">₪</span>
+        </div>
+        <button class="personal-box-btn" onclick="calcPersonalMortgage()">חשב לי</button>
+      </div>
+      <div id="personalResults"></div>
+    </div>
+
     <!-- PROFIT -->
     <div id="profitSection">${buildProfitHTML(d)}</div>
 
@@ -1576,6 +1632,56 @@ function renderResults(d) {
     const el = document.querySelector(sel);
     if (el) animateVal(el, val);
   });
+}
+
+function calcPersonalMortgage() {
+  if (!window.lastCalcData) return;
+  const d          = window.lastCalcData;
+  const userEquity = parseFloat(document.getElementById('userEquityInput').value);
+
+  if (!userEquity || userEquity <= 0) {
+    alert('נא להזין הון עצמי');
+    return;
+  }
+  if (userEquity < d.equity) {
+    alert(`ההון העצמי המינימלי הנדרש לדירה זו הוא ${fmt(d.equity)}.\nלא ניתן לרכוש עם פחות מכך.`);
+    return;
+  }
+  if (userEquity >= d.finalPrice) {
+    alert('ההון העצמי גבוה ממחיר הדירה 😄 אין צורך במשכנתה');
+    return;
+  }
+
+  // משכנתה בפועל = מחיר סופי פחות הון עצמי, לא יעלה על המקסימום המותר
+  const actualMortgage = Math.min(d.finalPrice - userEquity, d.mortgage);
+  const actualMonthly  = actualMortgage *
+    (MORTGAGE_R * Math.pow(1 + MORTGAGE_R, MORTGAGE_N)) /
+    (Math.pow(1 + MORTGAGE_R, MORTGAGE_N) - 1);
+  const actualIncome   = actualMonthly / INCOME_RATIO;
+  const savingsMonthly = d.monthly - actualMonthly;
+
+  const el = document.getElementById('personalResults');
+  el.style.display = 'block';
+  el.innerHTML = `
+    <div class="div" style="margin:16px 0 12px"></div>
+    <div class="r-grid">
+      <div class="r-card green">
+        <div class="r-lbl">המשכנתה שלך</div>
+        <div class="r-val">${fmt(actualMortgage)}</div>
+        <div class="r-sub">הון עצמי: ${fmt(userEquity)}</div>
+      </div>
+      <div class="r-card teal">
+        <div class="r-lbl">החזר חודשי שלך</div>
+        <div class="r-val">${fmt(actualMonthly)}</div>
+        <div class="r-sub">${savingsMonthly > 50 ? `חיסכון של ${fmt(savingsMonthly)}/חודש` : 'כמו המקסימום'}</div>
+      </div>
+      <div class="r-card blue">
+        <div class="r-lbl">הכנסה נטו נדרשת</div>
+        <div class="r-val">${fmt(actualIncome)}</div>
+        <div class="r-sub">38% מההכנסה הפנויה</div>
+      </div>
+    </div>
+  `;
 }
 
 function buildProfitHTML(d) {

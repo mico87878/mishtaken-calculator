@@ -6,6 +6,7 @@
 <title>מחשבון דירה בהנחה 2026 | קהילת הפודקאסט D-9 נדל"ן</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Rubik:wght@700;800;900&family=Roboto+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root {
   --bg:         #f2f5fb;
@@ -765,6 +766,71 @@ input[type=range] {
   vertical-align: middle;
 }
 
+/* ─── CASH FLOW TAB ─── */
+.cf-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 22px;
+}
+@media(max-width:580px){ .cf-summary { grid-template-columns: 1fr; } }
+.cf-stat {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 16px 14px;
+  text-align: center;
+}
+.cf-stat .cs-lbl { font-size: 11.5px; color: var(--muted); margin-bottom: 6px; }
+.cf-stat .cs-val {
+  font-family: 'Roboto Mono', monospace;
+  font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+}
+.cf-stat.magic .cs-val { color: var(--amber); }
+.cf-stat.interest .cs-val { color: var(--red); }
+.cf-stat.peak .cs-val { color: var(--indigo); }
+
+.cf-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px 16px 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+}
+.cf-chart-title {
+  font-size: 13px; font-weight: 700; color: var(--muted2);
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.cf-legend {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  font-size: 12px; color: var(--muted2); margin-bottom: 12px;
+}
+.cf-legend-dot {
+  width: 12px; height: 12px; border-radius: 3px; display: inline-block; margin-left: 5px;
+}
+
+.cf-table-wrap { overflow-x: auto; }
+.cf-table {
+  width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 600px;
+}
+.cf-table th {
+  background: var(--surface2); color: var(--muted2); font-weight: 600;
+  font-size: 11px; padding: 9px 10px; text-align: right;
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.cf-table td {
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
+  color: var(--text); white-space: nowrap;
+}
+.cf-table tr:last-child td { border-bottom: none; }
+.cf-table .payment-row td { background: rgba(81,88,232,0.04); font-weight: 600; }
+.cf-table .delivery-row td { background: rgba(5,150,105,0.05); font-weight: 700; }
+.cf-table td.positive { color: var(--green); font-weight: 600; }
+.cf-table td.negative { color: var(--red); font-weight: 600; }
+.cf-table td.savings-col { font-family: 'Roboto Mono', monospace; font-size: 12px; }
+.cf-table td.mortgage-col { color: var(--indigo); font-family: 'Roboto Mono', monospace; }
+
 /* ─── PERSONAL MORTGAGE BOX ─── */
 .personal-box {
   background: linear-gradient(135deg, rgba(5,150,105,0.05) 0%, rgba(13,148,136,0.03) 100%);
@@ -1187,6 +1253,7 @@ input[type=range] {
 <div class="tabs-wrap">
   <button class="tab-btn active" onclick="switchTab('calc', this)">🧮 מחשבון מחיר</button>
   <button class="tab-btn" onclick="switchTab('index', this)">📈 הצמדה למדד</button>
+  <button class="tab-btn" onclick="switchTab('cashflow', this)">💸 תזרים בניה</button>
 </div>
 
 <!-- ══════════ TAB: CALCULATOR ══════════ -->
@@ -1343,6 +1410,107 @@ input[type=range] {
     <a class="cta-wa" href="https://chat.whatsapp.com/EWIP373AMNT36tWdGiB174?mode=gi_t" target="_blank">💬 קבוצת וואטסאפ</a>
   </div>
 
+</div>
+</div>
+
+<!-- ══════════ TAB: CASH FLOW ══════════ -->
+<div id="tab-cashflow" class="tab-panel">
+<div class="container">
+
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-icon ci-green">💸</div>
+      <div>
+        <div class="card-title">תכנון תזרים מזומנים לתקופת הבניה</div>
+        <div class="card-sub">כמה להפריש כל חודש כדי להיות מוכן לכל תשלום</div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field">
+        <label>מחיר הדירה הסופי (₪)</label>
+        <div class="input-wrap has-unit">
+          <input type="number" id="cfPrice" placeholder="1,500,000">
+          <span class="unit">₪</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>הון עצמי (₪)</label>
+        <div class="input-wrap has-unit">
+          <input type="number" id="cfEquity" placeholder="300,000">
+          <span class="unit">₪</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>גובה המשכנתה (₪)</label>
+        <div class="input-wrap has-unit">
+          <input type="number" id="cfMortgage" placeholder="1,200,000">
+          <span class="unit">₪</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>חודשי מסירה</label>
+        <div class="range-wrap">
+          <div class="range-row">
+            <input type="range" id="cfMonths" min="12" max="60" step="4" value="24"
+              oninput="document.getElementById('cfMonthsVal').textContent=this.value+' חודשים'">
+            <span class="range-val" id="cfMonthsVal">24 חודשים</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <button class="calc-btn" onclick="calcCashFlow()" style="margin-top:8px">⚡ חשב תזרים</button>
+  </div>
+
+  <div id="cfResults" style="display:none">
+
+    <div class="cf-summary">
+      <div class="cf-stat magic">
+        <div class="cs-lbl">✨ המספר הקסם — הפרשה חודשית</div>
+        <div class="cs-val" id="cfMagicNum">—</div>
+      </div>
+      <div class="cf-stat peak">
+        <div class="cs-lbl">📈 שיא ההחזר החודשי</div>
+        <div class="cs-val" id="cfPeakPayment">—</div>
+      </div>
+      <div class="cf-stat interest">
+        <div class="cs-lbl">💰 ריבית בתקופת הבניה</div>
+        <div class="cs-val" id="cfTotalInterest">—</div>
+      </div>
+    </div>
+
+    <div class="cf-chart-card">
+      <div class="cf-chart-title">📊 התפתחות ההחזרים והחיסכון לאורך תקופת הבניה</div>
+      <div class="cf-legend">
+        <span><span class="cf-legend-dot" style="background:#5158e8"></span>החזר חודשי למשכנתה</span>
+        <span><span class="cf-legend-dot" style="background:#d97706"></span>הפרשה חודשית קבועה</span>
+        <span><span class="cf-legend-dot" style="background:#059669;opacity:0.6"></span>יתרת חיסכון</span>
+      </div>
+      <canvas id="cfChart"></canvas>
+    </div>
+
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-icon ci-blue">📋</div>
+        <div>
+          <div class="card-title">לוח תזרים חודשי מפורט</div>
+          <div class="card-sub">שורות מודגשות = תשלום לקבלן · ירוק = מסירה</div>
+        </div>
+      </div>
+      <div class="cf-table-wrap">
+        <table class="cf-table">
+          <thead>
+            <tr>
+              <th>חודש</th><th>תשלום לקבלן</th><th>מקור</th>
+              <th>משכנתה שנמשכה</th><th>החזר חודשי</th>
+              <th>לחיסכון / מחיסכון</th><th>יתרת חיסכון</th>
+            </tr>
+          </thead>
+          <tbody id="cfTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
 </div>
 </div>
 
@@ -1956,6 +2124,148 @@ function calcIndex() {
     <div class="hint" style="margin-top:10px">⚠️ אומדן בלבד · בדקו מול תנאי ההסכם והמדד הרשמי</div>
   `;
   card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ══════════════════════════════════════════
+//  CASH FLOW PLANNER
+// ══════════════════════════════════════════
+let cfChartInstance = null;
+
+function buildContractorSchedule(price, deliveryMonths) {
+  const schedule = [];
+  schedule.push({ month: 0, amount: price * 0.07, label: 'חתימה (7%)' });
+  schedule.push({ month: 2, amount: price * 0.13, label: '45 יום (13%)' });
+  const midMonths = [];
+  for (let m = 4; m < deliveryMonths; m += 4) midMonths.push(m);
+  const midPct = midMonths.length > 0 ? 0.70 / midMonths.length : 0;
+  midMonths.forEach(m => schedule.push({ month: m, amount: price * midPct, label: `חודש ${m} (${(midPct*100).toFixed(1)}%)` }));
+  schedule.push({ month: deliveryMonths, amount: price * 0.10, label: `מסירה (10%)` });
+  return schedule;
+}
+
+function shpitzer(drawn) {
+  if (drawn <= 0) return 0;
+  return drawn * (MORTGAGE_R * Math.pow(1+MORTGAGE_R, MORTGAGE_N)) / (Math.pow(1+MORTGAGE_R, MORTGAGE_N) - 1);
+}
+
+function runCFSimulation(price, equity, mortgage, deliveryMonths, M) {
+  const schedule = buildContractorSchedule(price, deliveryMonths);
+  let equityLeft = equity, mortgageDrawn = 0, savings = 0;
+  const rows = [];
+  for (let month = 0; month <= deliveryMonths; month++) {
+    const payments = schedule.filter(p => p.month === month);
+    let contractorAmt = 0, fromEquity = 0, fromMortgage = 0, label = '';
+    if (payments.length) {
+      contractorAmt = payments.reduce((s, p) => s + p.amount, 0);
+      label = payments.map(p => p.label).join(' + ');
+      fromEquity = Math.min(contractorAmt, equityLeft);
+      equityLeft -= fromEquity;
+      fromMortgage = Math.min(contractorAmt - fromEquity, mortgage - mortgageDrawn);
+      mortgageDrawn += fromMortgage;
+    }
+    const monthlyPayment = shpitzer(mortgageDrawn);
+    const delta = M - monthlyPayment;
+    savings += delta;
+    rows.push({ month, contractorAmt, label, fromEquity, fromMortgage, mortgageDrawn, monthlyPayment, delta, savings });
+  }
+  return rows;
+}
+
+function findMagicNumber(price, equity, mortgage, deliveryMonths) {
+  let lo = 0, hi = shpitzer(mortgage);
+  for (let i = 0; i < 60; i++) {
+    const mid = (lo + hi) / 2;
+    const minS = Math.min(...runCFSimulation(price, equity, mortgage, deliveryMonths, mid).map(r => r.savings));
+    if (minS >= -1) hi = mid; else lo = mid;
+  }
+  return Math.ceil(hi / 50) * 50;
+}
+
+function calcCashFlow() {
+  const price    = parseFloat(document.getElementById('cfPrice').value);
+  const equity   = parseFloat(document.getElementById('cfEquity').value);
+  const mortgage = parseFloat(document.getElementById('cfMortgage').value);
+  const months   = parseInt(document.getElementById('cfMonths').value);
+  if (!price || !equity || !mortgage) { alert('נא למלא את כל השדות'); return; }
+
+  const magicNum    = findMagicNumber(price, equity, mortgage, months);
+  const rows        = runCFSimulation(price, equity, mortgage, months, magicNum);
+  const peakPayment = Math.max(...rows.map(r => r.monthlyPayment));
+  const totalPaid   = rows.reduce((s, r) => s + r.monthlyPayment, 0);
+  const estInterest = Math.max(0, totalPaid - mortgage * (months / 360));
+
+  document.getElementById('cfMagicNum').textContent    = fmt(magicNum);
+  document.getElementById('cfPeakPayment').textContent = fmt(peakPayment);
+  document.getElementById('cfTotalInterest').textContent = fmt(estInterest);
+
+  // ── Chart ──
+  const labels      = rows.map(r => `חודש ${r.month}`);
+  const paymentData = rows.map(r => Math.round(r.monthlyPayment));
+  const magicLine   = rows.map(() => magicNum);
+  const savingsData = rows.map(r => Math.round(r.savings));
+
+  if (cfChartInstance) cfChartInstance.destroy();
+  cfChartInstance = new Chart(document.getElementById('cfChart').getContext('2d'), {
+    data: {
+      labels,
+      datasets: [
+        {
+          type: 'bar', label: 'יתרת חיסכון (₪)', data: savingsData, order: 3,
+          backgroundColor: savingsData.map(v => v >= 0 ? 'rgba(5,150,105,0.18)' : 'rgba(220,38,38,0.18)'),
+          borderColor:     savingsData.map(v => v >= 0 ? 'rgba(5,150,105,0.45)' : 'rgba(220,38,38,0.45)'),
+          borderWidth: 1,
+        },
+        {
+          type: 'line', label: 'החזר חודשי למשכנתה (₪)', data: paymentData, order: 1,
+          borderColor: '#5158e8', backgroundColor: 'rgba(81,88,232,0.07)',
+          fill: true, stepped: 'before', borderWidth: 2.5, tension: 0,
+          pointRadius: rows.map(r => r.contractorAmt > 0 ? 5 : 2),
+          pointBackgroundColor: '#5158e8',
+        },
+        {
+          type: 'line', label: `הפרשה קבועה — ${fmt(magicNum)}/חודש`, data: magicLine, order: 2,
+          borderColor: '#d97706', borderDash: [8,5], borderWidth: 2.5,
+          pointRadius: 0, fill: false,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom', rtl: true, labels: { font: { family:'Heebo', size:12 }, color:'#5a6380', padding:16 } },
+        tooltip: { rtl: true, callbacks: { label: ctx => ` ${ctx.dataset.label}: ₪${Math.round(ctx.raw).toLocaleString('he-IL')}` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { family:'Heebo', size:11 }, color:'#8290b0', maxRotation: 45 } },
+        y: { grid: { color:'rgba(0,0,0,0.05)' }, ticks: { font: { family:'Heebo', size:11 }, color:'#8290b0', callback: v => '₪' + Math.round(v).toLocaleString('he-IL') } }
+      }
+    }
+  });
+
+  // ── Table ──
+  document.getElementById('cfTableBody').innerHTML = rows.map(r => {
+    const isDelivery = r.month === months;
+    const isPayment  = r.contractorAmt > 0;
+    const rowClass   = isDelivery ? 'delivery-row' : isPayment ? 'payment-row' : '';
+    const src = r.fromEquity > 0 && r.fromMortgage > 0
+      ? `הון ${fmt(r.fromEquity)} + משכנ' ${fmt(r.fromMortgage)}`
+      : r.fromEquity > 0 ? 'הון עצמי' : r.fromMortgage > 0 ? 'משכנתה' : '—';
+    const dCls  = r.delta >= 0 ? 'positive' : 'negative';
+    const dSign = r.delta >= 0 ? '+' : '';
+    return `<tr class="${rowClass}">
+      <td>${isDelivery ? '🔑 ' : ''}חודש ${r.month}</td>
+      <td>${r.contractorAmt > 0 ? fmt(r.contractorAmt) : '—'}</td>
+      <td style="font-size:11px;color:var(--muted2)">${isPayment ? src : '—'}</td>
+      <td class="mortgage-col">${fmt(r.mortgageDrawn)}</td>
+      <td class="mortgage-col">${r.monthlyPayment > 0 ? fmt(r.monthlyPayment) : '—'}</td>
+      <td class="savings-col ${dCls}">${dSign}${fmt(Math.abs(r.delta))}</td>
+      <td class="savings-col ${r.savings >= 0 ? 'positive' : 'negative'}">${fmt(r.savings)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('cfResults').style.display = 'block';
+  document.getElementById('cfResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ══════════════════════════════════════════

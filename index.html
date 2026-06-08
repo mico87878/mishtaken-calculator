@@ -1473,7 +1473,7 @@ input[type=range] {
         <div class="cs-val" id="cfPeakPayment">—</div>
       </div>
       <div class="cf-stat interest">
-        <div class="cs-lbl">💰 ריבית בתקופת הבניה</div>
+        <div class="cs-lbl">💳 סך תשלומי משכנתה בתקופת הבניה</div>
         <div class="cs-val" id="cfTotalInterest">—</div>
       </div>
     </div>
@@ -2191,8 +2191,8 @@ function calcCashFlow() {
   const magicNum    = findMagicNumber(price, equity, mortgage, months);
   const rows        = runCFSimulation(price, equity, mortgage, months, magicNum);
   const peakPayment = Math.max(...rows.map(r => r.monthlyPayment));
-  // ריבית נכונה: לכל חודש = סכום שנמשך × ריבית חודשית (4.7%÷12)
-  const totalInterest = rows.reduce((s, r) => s + r.mortgageDrawn * MORTGAGE_R, 0);
+  // סך כל ההחזרים החודשיים בפועל בתקופת הבניה
+  const totalInterest = rows.reduce((s, r) => s + r.monthlyPayment, 0);
 
   document.getElementById('cfMagicNum').textContent    = fmt(magicNum);
   document.getElementById('cfPeakPayment').textContent = fmt(peakPayment);

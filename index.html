@@ -2191,12 +2191,12 @@ function calcCashFlow() {
   const magicNum    = findMagicNumber(price, equity, mortgage, months);
   const rows        = runCFSimulation(price, equity, mortgage, months, magicNum);
   const peakPayment = Math.max(...rows.map(r => r.monthlyPayment));
-  const totalPaid   = rows.reduce((s, r) => s + r.monthlyPayment, 0);
-  const estInterest = Math.max(0, totalPaid - mortgage * (months / 360));
+  // ריבית נכונה: לכל חודש = סכום שנמשך × ריבית חודשית (4.7%÷12)
+  const totalInterest = rows.reduce((s, r) => s + r.mortgageDrawn * MORTGAGE_R, 0);
 
   document.getElementById('cfMagicNum').textContent    = fmt(magicNum);
   document.getElementById('cfPeakPayment').textContent = fmt(peakPayment);
-  document.getElementById('cfTotalInterest').textContent = fmt(estInterest);
+  document.getElementById('cfTotalInterest').textContent = fmt(totalInterest);
 
   // ── Chart ──
   const labels      = rows.map(r => `חודש ${r.month}`);

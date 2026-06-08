@@ -915,6 +915,79 @@ input[type=range] {
 }
 .tip:hover .tip-text { display: block; }
 
+/* ─── WEBINAR BANNER ─── */
+.webinar-banner {
+  background: linear-gradient(135deg, #4f46e5 0%, #0d9488 100%);
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  text-align: center;
+}
+.webinar-banner-txt {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.webinar-banner-txt strong { font-size: 15px; }
+.webinar-banner-btn {
+  background: #fff;
+  border: none;
+  border-radius: var(--r-sm);
+  color: #4f46e5;
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 9px 20px;
+  text-decoration: none;
+  display: inline-block;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.webinar-banner-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* ─── WEBINAR FOOTER BLOCK ─── */
+.webinar-footer-block {
+  background: linear-gradient(135deg, rgba(79,70,229,0.07) 0%, rgba(13,148,136,0.05) 100%);
+  border: 1px solid rgba(79,70,229,0.2);
+  border-radius: var(--r);
+  padding: 22px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: 0 16px 24px;
+  max-width: 820px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.webinar-footer-txt { flex: 1; min-width: 200px; }
+.webinar-footer-txt strong { display: block; font-size: 16px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.webinar-footer-txt span { font-size: 13px; color: var(--muted2); }
+.webinar-footer-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #0d9488 100%);
+  border: none;
+  border-radius: var(--r-sm);
+  color: #fff;
+  cursor: pointer;
+  font-family: 'Heebo', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 12px 24px;
+  text-decoration: none;
+  display: inline-block;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 20px rgba(79,70,229,0.3);
+}
+.webinar-footer-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
 /* ─── LEAD GATE ─── */
 .gate-overlay {
   position: fixed;
@@ -1092,6 +1165,15 @@ input[type=range] {
   </div>
 </div>
 
+<!-- WEBINAR BANNER -->
+<div class="webinar-banner">
+  <div class="webinar-banner-txt">
+    <strong>🎓 וובינר חינמי — איך לנצל את ההגרלה נכון?</strong><br>
+    הרשמו עכשיו לפני שהמקומות מתמלאים
+  </div>
+  <a class="webinar-banner-btn" href="https://click.smoove.io/lk0xw6dztgg7bwbwbbnmy1fen7gpjfigoy7ehx1r1hnanxinnt1yn643fmhkgfrn.ashx" target="_blank">👉 הרשמה לוובינר</a>
+</div>
+
 <!-- STEP INDICATOR -->
 <div class="steps" id="stepIndicator">
   <div class="step active" id="step1"><div class="step-num">1</div><span>בחר עיר</span></div>
@@ -1262,6 +1344,15 @@ input[type=range] {
   </div>
 
 </div>
+</div>
+
+<!-- WEBINAR FOOTER BLOCK -->
+<div class="webinar-footer-block">
+  <div class="webinar-footer-txt">
+    <strong>🎓 רוצים להבין את ההגרלה לעומק?</strong>
+    <span>הצטרפו לוובינר החינמי שלנו — כל מה שצריך לדעת לפני שנרשמים</span>
+  </div>
+  <a class="webinar-footer-btn" href="https://click.smoove.io/lk0xw6dztgg7bwbwbbnmy1fen7gpjfigoy7ehx1r1hnanxinnt1yn643fmhkgfrn.ashx" target="_blank">👉 הרשמה לוובינר</a>
 </div>
 
 <!-- FOOTER -->
